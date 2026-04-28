@@ -1,0 +1,10 @@
+package com.example.Lab6_Employee_System.Api;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class ApiResponse {
+    private String message;
+}
