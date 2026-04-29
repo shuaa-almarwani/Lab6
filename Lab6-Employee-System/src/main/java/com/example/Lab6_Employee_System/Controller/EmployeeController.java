@@ -129,29 +129,29 @@ public class EmployeeController {
         return ResponseEntity.status(200).body(employeeWithNoAnnualLeave);
 
     }
-
-    @PatchMapping("/promote-employee/{id}/{position}")
-    public ResponseEntity<?> promoteEmployee(@PathVariable String id, @PathVariable String position) {
+   @PatchMapping(   "/promote-employee/{supervisorId}/{employeeId}")
+    public ResponseEntity<?> promoteEmployee(@PathVariable String supervisorId, @PathVariable String employeeId) {
+        Employee supervisor = null;
+        Employee targetEmployee = null;
         for (Employee e : employees) {
-            if (e.getID().equals(id)) {
-                if (position.equalsIgnoreCase("supervisor")) {
-                    if (e.getAge() >= 30) {
-                       if(!e.isOnLeave()){
-                           e.setPosition("supervisor");
-                           return ResponseEntity.status(200).body(new ApiResponse("Employee with ID " + id + " position updated successfully to supervisor"));
-                       }
-                        return ResponseEntity.status(400).body(new ApiResponse("Confirm That employee is not currently on leave"));
-
-                    }
-                    return ResponseEntity.status(400).body(new ApiResponse("The Employee age must be at least 30 years"));
-
-                }
-                return ResponseEntity.status(403).body(new ApiResponse("Only supervisors can make this request"));
-            }
-
+            if (e.getID().equals(supervisorId)) supervisor = e;
+            if (e.getID().equals(employeeId)) targetEmployee = e;
         }
-        return ResponseEntity.status(404).body(new ApiResponse("Employee with id " + id + " not found"));
+        if (supervisor == null) return ResponseEntity.status(404).body(new ApiResponse("Supervisor not found"));
+        if (targetEmployee == null) return ResponseEntity.status(404).body(new ApiResponse("Employee not found"));
 
+        if (!supervisor.getPosition().equalsIgnoreCase("supervisor")) {
+            return ResponseEntity.status(403).body(new ApiResponse("Only supervisors can make this request"));
+        }
 
+        if (targetEmployee.getAge() < 30) {
+            return ResponseEntity.status(400).body(new ApiResponse("The Employee age must be at least 30 years"));
+        }
+
+        if (targetEmployee.isOnLeave()) {
+            return ResponseEntity.status(400).body(new ApiResponse("Confirm That employee is not currently on leave"));
+        }
+        targetEmployee.setPosition("supervisor");
+        return ResponseEntity.status(200).body(new ApiResponse("Employee " + employeeId + " promoted successfully"));
     }
 }
